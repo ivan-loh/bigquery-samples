@@ -1,0 +1,18 @@
+-- Creates a table of datetime 1 minute apart to our localtimezone
+
+CREATE TEMP FUNCTION HOUR_START()       RETURNS INT64     AS ( 10 );
+CREATE TEMP FUNCTION HOUR_END()         RETURNS INT64     AS ( 21 );
+CREATE TEMP FUNCTION DATE_START()       RETURNS DATE      AS ( "2020-05-01" );
+CREATE TEMP FUNCTION DATE_END()         RETURNS DATE      AS ( "2020-05-01" );
+CREATE TEMP FUNCTION TIMESTAMP_START()  RETURNS TIMESTAMP AS ( TIMESTAMP( DATE_START() , 'Asia/Kuala_Lumpur') );
+CREATE TEMP FUNCTION TIMESTAMP_END()    RETURNS TIMESTAMP AS ( TIMESTAMP_ADD( TIMESTAMP(   DATE_END() , 'Asia/Kuala_Lumpur') , INTERVAL 1439 MINUTE) );
+
+SELECT
+  EXTRACT( DATETIME FROM utc_datetime AT TIME ZONE 'Asia/Kuala_Lumpur') as datetime,
+  EXTRACT( DATE     FROM utc_datetime AT TIME ZONE 'Asia/Kuala_Lumpur') as date,
+  EXTRACT( HOUR     FROM utc_datetime AT TIME ZONE 'Asia/Kuala_Lumpur') as hour,
+  EXTRACT( TIME     FROM utc_datetime AT TIME ZONE 'Asia/Kuala_Lumpur') as time
+FROM
+    UNNEST( GENERATE_TIMESTAMP_ARRAY( TIMESTAMP_START(), TIMESTAMP_END(), INTERVAL 1 MINUTE  ) ) AS utc_datetime
+WHERE
+  EXTRACT( HOUR     FROM utc_datetime AT TIME ZONE 'Asia/Kuala_Lumpur') BETWEEN HOUR_START() AND HOUR_END()
